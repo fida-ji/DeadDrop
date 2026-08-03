@@ -1,0 +1,32 @@
+# Netlify deployment for DeadDrop.
+# Build the Vite frontend from the repo root. Configuration values (such as
+# VITE_CONTRACT_ADDRESS) are set as Site environment variables in the Netlify
+# dashboard, never here. This file contains no secrets.
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Proxy GenLayer RPC through the same origin so wallet/ad/privacy extensions do
+# not block requests to the RPC host. The app calls /api/rpc.
+[[redirects]]
+  from = "/api/rpc"
+  to = "https://rpc-bradbury.genlayer.com"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/rpc/*"
+  to = "https://rpc-bradbury.genlayer.com/:splat"
+  status = 200
+  force = true
+
+# SPA fallback: serve index.html for client-side routes.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
