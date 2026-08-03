@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 48" width="960" height="192">
+  <!-- DeadDrop horizontal lockup: mark + wordmark, amber on ink -->
+  <rect width="240" height="48" fill="#0B0A08"/>
+  <g transform="translate(8 8)">
+    <path d="M12.5 3h5l3 3v10h-8z" fill="#E8B04B"/>
+    <path d="M17.5 3v3h3" fill="none" stroke="#0B0A08" stroke-width="1.4"/>
+    <path d="M6 17h5M21 17h5" fill="none" stroke="#E8B04B" stroke-width="2.4" stroke-linecap="square"/>
+    <path d="M6 17v10h20V17" fill="none" stroke="#E8B04B" stroke-width="2.4" stroke-linejoin="miter"/>
+  </g>
+  <text x="50" y="31" font-family="'IBM Plex Mono', ui-monospace, monospace" font-size="22" font-weight="600" letter-spacing="0.5" fill="#ECE6D8">Dead<tspan fill="#E8B04B">Drop</tspan></text>
+</svg>

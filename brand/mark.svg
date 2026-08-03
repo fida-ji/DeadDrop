@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="512" height="512">
+  <!-- DeadDrop mark: an evidence document half-inserted into a drop container -->
+  <path d="M12.5 3h5l3 3v10h-8z" fill="#E8B04B"/>
+  <path d="M17.5 3v3h3" fill="none" stroke="#0B0A08" stroke-width="1.4"/>
+  <path d="M6 17h5M21 17h5" fill="none" stroke="#E8B04B" stroke-width="2.4" stroke-linecap="square"/>
+  <path d="M6 17v10h20V17" fill="none" stroke="#E8B04B" stroke-width="2.4" stroke-linejoin="miter"/>
+</svg>

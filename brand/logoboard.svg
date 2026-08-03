@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" width="1280" height="840">
+  <!-- DeadDrop brand board: mark, lockups, and palette -->
+  <defs>
+    <g id="ddmark">
+      <path d="M12.5 3h5l3 3v10h-8z" fill="#E8B04B"/>
+      <path d="M17.5 3v3h3" fill="none" stroke="#0B0A08" stroke-width="1.4"/>
+      <path d="M6 17h5M21 17h5" fill="none" stroke="#E8B04B" stroke-width="2.4" stroke-linecap="square"/>
+      <path d="M6 17v10h20V17" fill="none" stroke="#E8B04B" stroke-width="2.4" stroke-linejoin="miter"/>
+    </g>
+  </defs>
+
+  <rect width="640" height="420" fill="#0B0A08"/>
+
+  <!-- primary mark, large -->
+  <rect x="32" y="32" width="192" height="192" fill="#131110" stroke="#2A2724"/>
+  <use href="#ddmark" transform="translate(80 72) scale(3.75)"/>
+
+  <!-- horizontal lockup -->
+  <rect x="256" y="32" width="352" height="88" fill="#131110" stroke="#2A2724"/>
+  <use href="#ddmark" transform="translate(280 56) scale(1.25)"/>
+  <text x="330" y="89" font-family="'IBM Plex Mono', ui-monospace, monospace" font-size="30" font-weight="600" letter-spacing="0.5" fill="#ECE6D8">Dead<tspan fill="#E8B04B">Drop</tspan></text>
+
+  <!-- mark on light -->
+  <rect x="256" y="152" width="168" height="72" fill="#ECE6D8"/>
+  <use href="#ddmark" transform="translate(272 168) scale(1.25)"/>
+  <text x="318" y="196" font-family="'IBM Plex Mono', ui-monospace, monospace" font-size="17" font-weight="600" fill="#0B0A08">Dead<tspan fill="#B88733">Drop</tspan></text>
+
+  <!-- favicon sizes -->
+  <rect x="456" y="152" width="152" height="72" fill="#131110" stroke="#2A2724"/>
+  <use href="#ddmark" transform="translate(476 172) scale(1)"/>
+  <use href="#ddmark" transform="translate(522 176) scale(0.75)"/>
+  <use href="#ddmark" transform="translate(556 178) scale(0.5)"/>
+  <text x="566" y="212" font-family="'IBM Plex Mono', ui-monospace, monospace" font-size="10" fill="#928B7B">32·24·16</text>
+
+  <!-- palette -->
+  <g font-family="'IBM Plex Mono', ui-monospace, monospace" font-size="11">
+    <rect x="32" y="256" width="128" height="56" fill="#E8B04B"/>
+    <text x="40" y="330" fill="#928B7B">amber  #E8B04B</text>
+    <rect x="176" y="256" width="128" height="56" fill="#0B0A08" stroke="#2A2724"/>
+    <text x="184" y="330" fill="#928B7B">ink    #0B0A08</text>
+    <rect x="320" y="256" width="128" height="56" fill="#ECE6D8"/>
+    <text x="328" y="330" fill="#928B7B">bone   #ECE6D8</text>
+    <rect x="464" y="256" width="128" height="56" fill="#928B7B"/>
+    <text x="472" y="330" fill="#928B7B">muted  #928B7B</text>
+  </g>
+
+  <text x="32" y="392" font-family="'IBM Plex Mono', ui-monospace, monospace" font-size="12" fill="#928B7B" letter-spacing="2">DEADDROP · TRUSTLESS ADJUDICATION OF ANONYMOUS EVIDENCE · GENLAYER</text>
+</svg>
