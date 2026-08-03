@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" fill="#0B0A08"/>
+  <!-- evidence document descending into the drop -->
+  <path d="M12.5 3h5l3 3v10h-8z" fill="#E8B04B"/>
+  <path d="M17.5 3v3h3" fill="none" stroke="#0B0A08" stroke-width="1.4"/>
+  <!-- dead-drop container: top edge open at the slot -->
+  <path d="M6 17h5M21 17h5" fill="none" stroke="#E8B04B" stroke-width="2.4" stroke-linecap="square"/>
+  <path d="M6 17v10h20V17" fill="none" stroke="#E8B04B" stroke-width="2.4" stroke-linejoin="miter"/>
+</svg>
