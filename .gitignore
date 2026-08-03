@@ -1,0 +1,45 @@
+# --- Secrets / environment ---
+.env
+.env.*
+!.env.example
+
+# --- Internal docs and agent files (never ship) ---
+dapp-*.md
+memory.md
+progress.md
+CLAUDE.md
+.kiro/
+.agent/
+.claude/
+.cursor/
+
+# --- Python ---
+.venv*
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# --- Node / frontend ---
+node_modules/
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# --- Build / deploy artifacts ---
+artifacts/
+cache/
+.cache/
+.netlify/
+.firebase/
+.firebaserc
+
+# --- Logs ---
+*.log
+
+# --- Editor / OS ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
