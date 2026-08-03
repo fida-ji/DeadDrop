@@ -234,7 +234,7 @@ code, .mono {
 .logo .mark {
   display: block;
 }
-.logo .drop {
+.logo .wordmark__drop {
   color: var(--amber);
 }
 
