@@ -1,0 +1,21 @@
+{
+  "contractAddress": "0x79F6C2E942DE68a3e24Cf70e42D8A8F2b3813D20",
+  "deployTx": "0x945b28cf590df0f6fdf0d060916c789a435dcdbe1afb827ada61b7d12f9e0bfd",
+  "drops": [
+    { "id": 0, "category": "corporate-misconduct", "finalStatus": "open",
+      "createTx": "0x17ca6b015abb60afc8b0c45c1ac19696ccc63cb83c4db8e22238a0d23605f9aa" },
+    { "id": 1, "category": "corporate-misconduct", "finalStatus": "settled/released",
+      "createTx": "0x19f9f1a6ac798193b14b8a83e0c82ac71d18f23bf2e36fb067677d6171c21424",
+      "adjudicateTx": "0x7e934ab324466ec0b3fe505ce5c7fa813640b8dff9c2a977b2fc0d5851fb3989",
+      "settleTx": "0x6f864a03fa2515f5a7669f9a218aa6ebd444813cab7ae2f32b13292bf18a34cb" },
+    { "id": 2, "category": "environmental", "finalStatus": "settled/refunded",
+      "createTx": "0xcf9301e8f0344353df4ce421554a8a4a95f0778fc9e283e97bba30afdf08794e",
+      "adjudicateTx": "0xb3f886bc101b95d7b7c699c525e7af2bb6fa1e074d2d6f5f759bc1193fd1fe25",
+      "settleTx": "0x73a687f64075f80f78d70cb043a17a3bc44b435e0212189a320b09cf162eab51" },
+    { "id": 3, "category": "product-safety", "finalStatus": "submitted",
+      "createTx": "0xe3e76fb9690c0b44aa2d0b266b307c05d9e0f275a84a1f83c5d60afd3f475e23",
+      "submitTx": "0xf24b4d18650efac4b0898f87b52304b112fa6279269ff65916be4cd2bd3ebb50" },
+    { "id": 4, "category": "governance", "finalStatus": "open",
+      "createTx": "0xfaad3f1024a0db2e9dccb94e29d37c863fa844b575830a54966498c77815d36f" }
+  ]
+}

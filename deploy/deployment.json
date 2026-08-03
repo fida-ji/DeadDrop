@@ -1,0 +1,19 @@
+{
+  "network": "testnet-bradbury",
+  "chainId": 4221,
+  "contractAddress": "0x79F6C2E942DE68a3e24Cf70e42D8A8F2b3813D20",
+  "deployTx": "0x945b28cf590df0f6fdf0d060916c789a435dcdbe1afb827ada61b7d12f9e0bfd",
+  "deployer": "0x3809C0AF0eb85c087bA76Cb763Eb9CbB057ff85b",
+  "appealWindowSecs": 60,
+  "explorer": "https://explorer-bradbury.genlayer.com/tx/0x945b28cf590df0f6fdf0d060916c789a435dcdbe1afb827ada61b7d12f9e0bfd",
+  "contractExplorer": "https://explorer-bradbury.genlayer.com/contracts/0x79F6C2E942DE68a3e24Cf70e42D8A8F2b3813D20",
+  "verifiedAt": "2026-07-08T10:54:23.001Z",
+  "protocolConfig": {
+    "appeal_window_secs": 60,
+    "drop_count": 0,
+    "fee_bps": 100,
+    "fee_recipient": "0x3809C0AF0eb85c087bA76Cb763Eb9CbB057ff85b",
+    "max_fee_bps": 1000,
+    "owner": "0x3809C0AF0eb85c087bA76Cb763Eb9CbB057ff85b"
+  }
+}
