@@ -9,7 +9,7 @@ import {
 } from "react";
 import {
   connectWallet,
-  ensureBradbury,
+  ensureNetwork,
   getChainId,
   getConnectedAccount,
   hasWallet,
@@ -20,7 +20,7 @@ import { NETWORK } from "./config";
 interface WalletState {
   account: `0x${string}` | null;
   chainId: number | null;
-  onBradbury: boolean;
+  onNetwork: boolean;
   walletAvailable: boolean;
   connecting: boolean;
   error: string | null;
@@ -74,7 +74,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setConnecting(true);
     try {
       const acc = await connectWallet();
-      await ensureBradbury();
+      await ensureNetwork();
       setAccount(acc);
       setChainId(await getChainId());
     } catch (e) {
@@ -87,7 +87,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const switchNetwork = useCallback(async () => {
     setError(null);
     try {
-      await ensureBradbury();
+      await ensureNetwork();
       setChainId(await getChainId());
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -104,7 +104,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     () => ({
       account,
       chainId,
-      onBradbury: chainId === NETWORK.chainId,
+      onNetwork: chainId === NETWORK.chainId,
       walletAvailable,
       connecting,
       error,

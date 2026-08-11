@@ -2,7 +2,6 @@
 
 export const NETWORK = {
   name: "GenLayer Bradbury",
-  chainKey: "testnetBradbury" as const,
   chainId: 4221,
   chainIdHex: "0x107d",
   rpc: "https://rpc-bradbury.genlayer.com",

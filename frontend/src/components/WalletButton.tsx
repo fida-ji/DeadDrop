@@ -4,7 +4,7 @@ import { NETWORK } from "../lib/config";
 import { Wallet } from "./Icons";
 
 export default function WalletButton() {
-  const { account, onBradbury, walletAvailable, connecting, connect, disconnect, switchNetwork } =
+  const { account, onNetwork, walletAvailable, connecting, connect, disconnect, switchNetwork } =
     useWallet();
 
   if (!walletAvailable) {
@@ -24,7 +24,7 @@ export default function WalletButton() {
     );
   }
 
-  if (!onBradbury) {
+  if (!onNetwork) {
     return (
       <button className="btn btn--sm" onClick={() => void switchNetwork()}>
         Switch to {NETWORK.name}

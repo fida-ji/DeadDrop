@@ -3,6 +3,7 @@ import type { Hash } from "genlayer-js/types";
 import { useWallet } from "../lib/useWallet";
 import { writeContract, waitAccepted } from "../lib/genlayer";
 import { genToWei } from "../lib/format";
+import { NETWORK } from "../lib/config";
 import type { ProtocolConfig } from "../lib/types";
 import TxStatus, { type TxState } from "./TxStatus";
 import WalletButton from "./WalletButton";
@@ -23,6 +24,8 @@ function parseError(e: unknown): string {
   const m = raw.match(/\[(?:EXPECTED|EXTERNAL|TRANSIENT|LLM_ERROR)\]\s*([A-Za-z0-9 ._%>=/():,-]+)/);
   if (m) return m[1].trim();
   if (/nonce is not consistent/i.test(raw)) return "Wallet nonce out of sync. Reload the page and retry.";
+  if (/pipeline backpressure|not currently accepting transactions/i.test(raw))
+    return "The network is congested and is not accepting transactions right now. Try again in a minute.";
   if (/rate limit|-32429|\b429\b/i.test(raw)) return "The network is rate limiting requests. Try again shortly.";
   if (/insufficient/i.test(raw)) return "Insufficient balance for escrow plus gas. Fund the account from the faucet.";
   return raw.length > 200 ? raw.slice(0, 200) + "\u2026" : raw;
@@ -35,7 +38,7 @@ export default function Console({
   config: ProtocolConfig | null;
   onDone: () => void;
 }) {
-  const { account, onBradbury } = useWallet();
+  const { account, onNetwork } = useWallet();
   const [tab, setTab] = useState<Tab>("create");
   const [tx, setTx] = useState<TxState>({ phase: "idle" });
   const [busy, setBusy] = useState(false);
@@ -57,7 +60,7 @@ export default function Console({
     }
   }
 
-  const ready = !!account && onBradbury;
+  const ready = !!account && onNetwork;
 
   return (
     <section id="console" className="section">
@@ -65,7 +68,7 @@ export default function Console({
         <span className="eyebrow">Interactive console</span>
         <h2>Drive the protocol yourself.</h2>
         <p className="lede">
-          Connect a wallet on {config ? "Bradbury" : "Bradbury"} and run any step of the lifecycle
+          Connect a wallet on {NETWORK.name} and run any step of the lifecycle
           against the live contract. Each action is a single transaction; you will see its status
           and an explorer link here.
         </p>
@@ -91,7 +94,7 @@ export default function Console({
               <div className="notice" style={{ marginBottom: 22, display: "flex", gap: 16, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
                 <span>
                   {account
-                    ? "Your wallet is connected but not on Bradbury. Switch network to continue."
+                    ? `Your wallet is connected but not on ${NETWORK.name}. Switch network to continue.`
                     : "Connect a wallet to run transactions. Reading the protocol needs no wallet."}
                 </span>
                 <WalletButton />

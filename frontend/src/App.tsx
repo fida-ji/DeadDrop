@@ -345,7 +345,7 @@ export default function App() {
             </nav>
           </div>
           <p className="footer__note">
-            DeadDrop runs on the GenLayer Bradbury testnet. Balances are test tokens with no
+            DeadDrop runs on the {NETWORK.name} testnet. Balances are test tokens with no
             monetary value. The case files are real on-chain drops seeded for demonstration and were
             executed from a single maintainer account across roles; in normal use the poster and
             source are different wallets. Nothing here is legal advice.

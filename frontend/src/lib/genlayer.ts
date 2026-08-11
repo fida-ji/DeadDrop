@@ -6,9 +6,38 @@ import { CONTRACT_ADDRESS, NETWORK } from "./config";
 
 // --- Provider ---------------------------------------------------------------
 
+// DeadDrop connects with plain EIP-1193 only. genlayer-js still ships a
+// Snaps-based connect() helper, so the injected provider is wrapped to reject
+// every Snaps RPC method. That makes a Snap install prompt impossible from any
+// code path and keeps the app usable in wallets that have no Snaps support.
+const SNAPS_METHOD = /snaps?$/i;
+
+let guardedProvider: Eip1193Provider | undefined;
+let guardedFor: Eip1193Provider | undefined;
+
+function withoutSnaps(provider: Eip1193Provider): Eip1193Provider {
+  if (guardedFor === provider && guardedProvider) return guardedProvider;
+  guardedFor = provider;
+  guardedProvider = {
+    request: (args) => {
+      if (SNAPS_METHOD.test(args.method)) {
+        return Promise.reject(
+          new Error(`DeadDrop does not use MetaMask Snaps (blocked ${args.method}).`),
+        );
+      }
+      return provider.request(args);
+    },
+    on: provider.on ? (e, h) => provider.on?.(e, h) : undefined,
+    removeListener: provider.removeListener ? (e, h) => provider.removeListener?.(e, h) : undefined,
+    isMetaMask: provider.isMetaMask,
+  };
+  return guardedProvider;
+}
+
 export function getInjectedProvider(): Eip1193Provider | undefined {
   if (typeof window === "undefined") return undefined;
-  return window.ethereum;
+  const injected = window.ethereum;
+  return injected ? withoutSnaps(injected) : undefined;
 }
 
 export function hasWallet(): boolean {
@@ -29,20 +58,34 @@ function rpcEndpoint(): string {
 
 // --- Clients ----------------------------------------------------------------
 
+// createClient attaches genlayer-js's Snaps helpers (connect, metamaskClient).
+// They are dropped here so nothing in the app can reach them by accident; the
+// provider guard above is the backstop if a dependency tries anyway.
+function withoutSnapsActions<T>(client: T): T {
+  delete (client as { connect?: unknown }).connect;
+  delete (client as { metamaskClient?: unknown }).metamaskClient;
+  return client;
+}
+
 export function getReadClient() {
-  return createClient({ chain: testnetBradbury, endpoint: rpcEndpoint() });
+  return withoutSnapsActions(createClient({ chain: testnetBradbury, endpoint: rpcEndpoint() }));
 }
 
 export function getWriteClient(address: `0x${string}`) {
   const provider = getInjectedProvider();
   if (!provider) throw new Error("No wallet found. Install a browser wallet to continue.");
-  return createClient({
-    chain: testnetBradbury,
-    account: address,
-    endpoint: rpcEndpoint(),
-    // genlayer-js accepts an EIP-1193 provider for browser signing.
-    provider: provider as never,
-  });
+  return withoutSnapsActions(
+    createClient({
+      chain: testnetBradbury,
+      account: address,
+      endpoint: rpcEndpoint(),
+      // Signing goes through the injected EIP-1193 provider. Passing `account`
+      // as an address string (not an object) keeps genlayer-js on its provider
+      // path, so eth_sendTransaction is forwarded to the wallet and nothing is
+      // signed locally. No MetaMask Snap is involved.
+      provider: provider as never,
+    }),
+  );
 }
 
 // --- Wallet lifecycle -------------------------------------------------------
@@ -79,35 +122,59 @@ export async function getChainId(): Promise<number | null> {
   }
 }
 
-// Add or switch the wallet to Bradbury. No MetaMask Snaps required.
-export async function ensureBradbury(): Promise<void> {
+// Add or switch the wallet to Bradbury using only standard EIP-1193 methods.
+// Works in MetaMask, Rabby, Brave, Coinbase Wallet and any injected provider.
+// No MetaMask Snap, no Flask build, no extra install step.
+export async function ensureNetwork(): Promise<void> {
   const provider = getInjectedProvider();
   if (!provider) throw new Error("No wallet found.");
+
+  if ((await getChainId()) === NETWORK.chainId) return;
+
+  const chainParams = {
+    chainId: NETWORK.chainIdHex,
+    chainName: NETWORK.name,
+    nativeCurrency: { name: NETWORK.currency, symbol: NETWORK.currency, decimals: 18 },
+    rpcUrls: [NETWORK.rpc],
+    blockExplorerUrls: [NETWORK.explorer],
+  };
+
   try {
     await provider.request({
       method: "wallet_switchEthereumChain",
       params: [{ chainId: NETWORK.chainIdHex }],
     });
   } catch (err: unknown) {
-    const code = (err as { code?: number })?.code;
-    // 4902 = chain not added yet. Add it, then it becomes active.
-    if (code === 4902 || /Unrecognized chain/i.test(String((err as Error)?.message))) {
+    if (!isUnknownChainError(err)) throw err;
+    // The chain is not in the wallet yet. Adding it also makes it active in
+    // MetaMask; other wallets may need an explicit switch afterwards.
+    await provider.request({ method: "wallet_addEthereumChain", params: [chainParams] });
+    if ((await getChainId()) !== NETWORK.chainId) {
       await provider.request({
-        method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: NETWORK.chainIdHex,
-            chainName: NETWORK.name,
-            nativeCurrency: { name: NETWORK.currency, symbol: NETWORK.currency, decimals: 18 },
-            rpcUrls: [NETWORK.rpc],
-            blockExplorerUrls: [NETWORK.explorer],
-          },
-        ],
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: NETWORK.chainIdHex }],
       });
-    } else {
-      throw err;
     }
   }
+
+  if ((await getChainId()) !== NETWORK.chainId) {
+    throw new Error(`Switch your wallet to ${NETWORK.name} (chain ${NETWORK.chainId}) to continue.`);
+  }
+}
+
+// 4902 is the standard "unrecognized chain" code. Some wallets bury it in a
+// nested originalError, and a few only report it in the message.
+function isUnknownChainError(err: unknown): boolean {
+  const e = err as {
+    code?: number;
+    message?: string;
+    data?: { originalError?: { code?: number } };
+  };
+  return (
+    e?.code === 4902 ||
+    e?.data?.originalError?.code === 4902 ||
+    /unrecognized chain|chain .* not (added|found)|add.*chain/i.test(String(e?.message ?? ""))
+  );
 }
 
 export function onWalletEvent(
@@ -183,9 +250,20 @@ export async function writeContract(
   args: CalldataEncodable[] = [],
   value: bigint = 0n,
 ): Promise<Hash> {
-  const client = getWriteClient(address);
-  // Ensure the wallet is on Bradbury before signing.
-  await client.connect(NETWORK.chainKey);
+  // Standard EIP-1193 preflight: make sure the account is still authorized and
+  // the wallet is on Bradbury. genlayer-js also exposes client.connect(), but
+  // that helper installs the GenLayer MetaMask Snap (wallet_requestSnaps) and
+  // fails on any wallet without Snaps support, so it is deliberately not used.
+  const authorized = await getConnectedAccount();
+  if (!authorized) throw new Error("Wallet is locked or not connected. Connect it and retry.");
+  if (authorized.toLowerCase() !== address.toLowerCase()) {
+    throw new Error(
+      `The wallet is now on ${authorized}. Reconnect to send transactions from that account.`,
+    );
+  }
+  await ensureNetwork();
+
+  const client = getWriteClient(authorized);
   const hash = (await client.writeContract({
     address: CONTRACT_ADDRESS,
     functionName,
