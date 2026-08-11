@@ -88,10 +88,16 @@ Every transaction hash is recorded in [`deploy/seed-record.json`](deploy/seed-re
   chain. Deploy, verify, and seed from `deploy/`.
 - **Frontend** — React + Vite + TypeScript + `genlayer-js`. Documentation-first
   page plus an interactive console that reads and writes the contract: full
-  wallet lifecycle (connect, disconnect, account/chain change), direct Bradbury
-  add/switch without MetaMask Snaps, live transaction status with explorer
-  links, and reads throttled behind a global queue with backoff for the RPC
-  rate limit.
+  wallet lifecycle (connect, disconnect, account/chain change), live transaction
+  status with explorer links, and reads throttled behind a global queue with
+  backoff for the RPC rate limit.
+- **Wallet** — standard EIP-1193 only (`eth_requestAccounts`, `eth_chainId`,
+  `wallet_switchEthereumChain`, `wallet_addEthereumChain` on 4902,
+  `eth_sendTransaction`). No MetaMask Snap, no Flask build, no extra install
+  step, so any injected wallet works. `genlayer-js` also ships a Snaps-based
+  `client.connect()` helper; it is not used, and the injected provider is
+  wrapped to reject every Snaps RPC method so no code path can trigger a Snap
+  prompt. `npm run check:wallet` asserts both properties.
 - **Hosting** — Netlify or Firebase Hosting (static SPA). On Netlify the RPC is
   proxied through a same-origin `/api/rpc` path so wallet and privacy extensions
   do not block requests to the RPC host.
@@ -103,6 +109,7 @@ contracts/deaddrop.py     the Intelligent Contract
 tests/direct/             direct-mode tests (pytest + genlayer-test)
 deploy/                   deploy, verify, and seed scripts (genlayer-js)
 frontend/                 React + Vite app (site + console)
+frontend/scripts/         wallet-path check (EIP-1193 only, no Snaps)
 brand/                    logo and brand assets (SVG)
 netlify.toml              Netlify build + RPC proxy configuration
 firebase.json             Firebase Hosting configuration
@@ -123,8 +130,9 @@ pytest tests/direct/ -v
 
 ```bash
 cd frontend && npm install
-npm run dev       # dev server; /api/rpc is proxied to Bradbury
-npm run build     # type-check + production build to dist/
+npm run dev             # dev server; /api/rpc is proxied to Bradbury
+npm run build           # type-check + production build to dist/
+npm run check:wallet    # assert the wallet path is EIP-1193 only, no Snaps
 ```
 
 To point the app at a different contract deployment, set `VITE_CONTRACT_ADDRESS`.
@@ -170,6 +178,8 @@ npm run seed               # seeds full-lifecycle case files
 
 Fund the deployer from the [faucet](https://testnet-faucet.genlayer.foundation)
 first. The private key is read from the environment only and is never logged.
+Writes retry with backoff when the node reports pipeline backpressure. Set
+`DEPLOY_NETWORK=studionet` to target Studionet instead of Bradbury.
 
 ## Notes and limitations
 
