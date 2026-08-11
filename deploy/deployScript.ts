@@ -13,12 +13,13 @@ import { readFileSync, writeFileSync } from "node:fs";
 import {
   CONTRACT_PATH,
   DEPLOYMENT_PATH,
+  activeChain,
   makeClient,
   pollAccepted,
   read,
+  withRetry,
   write,
 } from "./lib";
-import { testnetBradbury } from "genlayer-js/chains";
 import type {
   DecodedDeployData,
   TransactionHash,
@@ -31,7 +32,7 @@ const APPEAL_WINDOW_SECS = 60;
 async function main() {
   const { account, client } = makeClient();
 
-  console.log("Network      :", testnetBradbury.name ?? "GenLayer Bradbury");
+  console.log("Network      :", activeChain().name);
   console.log("Deployer     :", account.address);
   console.log("Contract file:", CONTRACT_PATH);
 
@@ -39,10 +40,9 @@ async function main() {
   await client.initializeConsensusSmartContract();
 
   console.log("\nDeploying... submitting transaction");
-  const deployTx = (await client.deployContract({
-    code,
-    args: [],
-  })) as TransactionHash;
+  const deployTx = await withRetry(
+    () => client.deployContract({ code, args: [] }) as Promise<TransactionHash>,
+  );
   console.log("Deploy tx    :", deployTx);
 
   const receipt = await pollAccepted(client, deployTx);

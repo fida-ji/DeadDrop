@@ -7,13 +7,20 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadEnv } from "dotenv";
 import { createClient, createAccount } from "genlayer-js";
-import { testnetBradbury } from "genlayer-js/chains";
+import { studionet, testnetBradbury } from "genlayer-js/chains";
 import {
   TransactionStatus,
   type GenLayerClient,
   type GenLayerChain,
   type TransactionHash,
 } from "genlayer-js/types";
+
+/** Target network: DEPLOY_NETWORK=bradbury (default) | studionet. */
+export function activeChain(): GenLayerChain {
+  return (process.env.DEPLOY_NETWORK ?? "bradbury").toLowerCase() === "studionet"
+    ? studionet
+    : testnetBradbury;
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.resolve(__dirname, "..");
@@ -35,13 +42,37 @@ export function requireKey(): `0x${string}` {
 export function makeClient() {
   const account = createAccount(requireKey());
   const client = createClient({
-    chain: testnetBradbury,
+    chain: activeChain(),
     account,
   }) as GenLayerClient<GenLayerChain>;
   return { account, client };
 }
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** True for transient node-side congestion (pipeline backpressure). */
+export function isBackpressure(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return /pipeline backpressure|not currently accepting transactions/i.test(msg);
+}
+
+/** Run an action with retry + backoff when the node reports congestion. */
+export async function withRetry<T>(action: () => Promise<T>, tries = 12): Promise<T> {
+  for (let attempt = 0; attempt < tries; attempt++) {
+    try {
+      return await action();
+    } catch (err) {
+      if (isBackpressure(err) && attempt < tries - 1) {
+        const wait = 5000 * (attempt + 1);
+        console.log(`  node congested (backpressure), retrying in ${wait / 1000}s...`);
+        await sleep(wait);
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error("retry loop exited unexpectedly");
+}
 
 /**
  * Poll a transaction to ACCEPTED/FINALIZED. genlayer-js waitForTransactionReceipt
@@ -105,14 +136,17 @@ export async function write(
   args: unknown[] = [],
   value = 0n,
 ): Promise<TransactionHash> {
-  const hash = (await client.writeContract({
-    address,
-    functionName,
-    args: args as never,
-    value,
-    // Explicit generous gas limit for payable / value-bearing writes.
-    ...(value > 0n ? { gas: 12_000_000n } : {}),
-  })) as TransactionHash;
+  const hash = await withRetry(
+    () =>
+      client.writeContract({
+        address,
+        functionName,
+        args: args as never,
+        value,
+        // Explicit generous gas limit for payable / value-bearing writes.
+        ...(value > 0n ? { gas: 12_000_000n } : {}),
+      }) as Promise<TransactionHash>,
+  );
   await pollAccepted(client, hash);
   return hash;
 }

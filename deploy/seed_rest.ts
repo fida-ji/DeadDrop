@@ -5,9 +5,8 @@
  */
 import { readFileSync } from "node:fs";
 import { createClient, createAccount } from "genlayer-js";
-import { testnetBradbury } from "genlayer-js/chains";
 import type { GenLayerClient, GenLayerChain, TransactionHash } from "genlayer-js/types";
-import { DEPLOYMENT_PATH, requireKey, read, pollAccepted, sleep } from "./lib";
+import { DEPLOYMENT_PATH, activeChain, requireKey, read, pollAccepted, sleep, withRetry } from "./lib";
 
 const WEI = 10n ** 18n;
 const gen = (s: string): bigint => {
@@ -17,7 +16,7 @@ const gen = (s: string): bigint => {
 
 function freshClient() {
   const account = createAccount(requireKey());
-  return createClient({ chain: testnetBradbury, account }) as GenLayerClient<GenLayerChain>;
+  return createClient({ chain: activeChain(), account }) as GenLayerClient<GenLayerChain>;
 }
 
 async function writeFresh(
@@ -27,13 +26,16 @@ async function writeFresh(
   value = 0n,
 ): Promise<TransactionHash> {
   const client = freshClient();
-  const hash = (await client.writeContract({
-    address,
-    functionName,
-    args: args as never,
-    value,
-    ...(value > 0n ? { gas: 12_000_000n } : {}),
-  })) as TransactionHash;
+  const hash = await withRetry(
+    () =>
+      client.writeContract({
+        address,
+        functionName,
+        args: args as never,
+        value,
+        ...(value > 0n ? { gas: 12_000_000n } : {}),
+      }) as Promise<TransactionHash>,
+  );
   await pollAccepted(client, hash);
   return hash;
 }
